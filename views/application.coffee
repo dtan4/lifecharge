@@ -1,27 +1,51 @@
 $ ->
-  $('#container').highcharts({
+  options = {
     chart: {
-      type: 'bar'
+      renderTo: 'container',
+      defaultSeriesType: 'column'
     },
     title: {
-      text: 'Fruit Consumption'
+      text: 'Electricity Charge'
     },
     xAxis: {
-      categories: ['Apples', 'Bananas', 'Oranges']
+      categories: [],
+      labels: {
+        rotation: -45,
+        align: 'right',
+        style: {
+          fontSize: '13px'
+        }
+      }
     },
     yAxis: {
       title: {
-        text: 'Fruit eaten'
+        text: 'Charge'
       }
     },
-    series: [
-      {
-        name: 'Jane',
-        data: [1, 0, 4]
-      },
-      {
-        name: 'John',
-        data: [5, 7, 3]
-      },
-    ]
-  })
+    legend: {
+      enabled: false
+    },
+    series: [{
+      name: 'Charge',
+      data: []
+    }]
+  }
+
+  $.get('/csv/electricity.csv', (data) ->
+    lines = data.split('\n')
+    chargeIdx = 0
+
+    $.each(lines, (lineIdx, line) ->
+      return if line == ''
+      items = line.split(',')
+
+      if lineIdx == 0
+        chargeIdx = items.indexOf('Charge')
+      else
+        options.xAxis.categories.push(items[0])
+        options.series[0].data.push(parseInt(items[chargeIdx]))
+    )
+
+    console.log options
+    chart = new Highcharts.Chart(options)
+  )
